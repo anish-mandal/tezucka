@@ -1,5 +1,5 @@
 import 'server-only'
-import { verify, sign } from 'jsonwebtoken'
+import { verify, sign, SignOptions } from 'jsonwebtoken'
 import { cookies } from 'next/headers'
 
 const secretKey = process.env.SESSION_SECRET
@@ -8,7 +8,7 @@ if (!secretKey) {
   throw Error("No SESSION_SECRET found")
 }
 
-async function encrypt(payload: object, exp: string | number) {
+async function encrypt(payload: object, exp: SignOptions['expiresIn']) {
   return sign(payload, secretKey!, { expiresIn: exp })
 }
 
@@ -33,8 +33,8 @@ export async function createSession(userId: string) {
     throw Error("no user id")
   }
 
-  const expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000
-  const session = await encrypt({ userId }, expiresAt)
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+  const session = await encrypt({ userId }, "7d")
   const cookieStore = await cookies()
 
   cookieStore.set("session", session, {
@@ -50,7 +50,11 @@ export async function checkSession() {
   const cookieStore = await cookies()
   const token = cookieStore.get("session");
 
-  return await decrypt(token)
+  if (!token) {
+    return null
+  }
+
+  return await decrypt(token.value)
 }
 
 export async function deleteSession() {
