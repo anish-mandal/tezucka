@@ -4,21 +4,25 @@ import { error, success } from "@/helpers/message";
 import { createSession } from "@/helpers/session";
 
 export async function POST(req: Request) {
-  let user;
-  const body = await req.json()
+  let user, body;
 
   try {
-    user = await db.user.find(body.email)
+    body = await req.json();
+    user = await db.user.find(body.email);
   } catch (e) {
     return Response.json(error("unable to find user"), { status: 400 })
   }
 
-  const match = await compare(body.password, user!.password);
+  if (!user) {
+    return Response.json(error("user not found"), { status: 400 })
+  }
+
+  const match = await compare(body.password, user.password);
   if (match) {
-    await createSession(user!._id);
+    await createSession(user._id);
 
     return Response.json(success("authorized", {}))
   } else {
-    return Response.json(error("unauthorized"), { status: 401 })
+    return Response.json(error("email or password incorrect"), { status: 401 })
   }
 }
