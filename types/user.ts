@@ -5,8 +5,12 @@ export interface IUser {
 }
 
 export interface DBUser {
+  _id?: string,
   name: string,
   password: string,
   email: string,
-  createdAt: Date
+  phoneNumber: string,
+  emailVerified: boolean,
+  createdAt?: Date,
+  updatedAt?: Date
 }
