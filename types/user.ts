@@ -5,14 +5,17 @@ export interface IUser {
 }
 
 export interface DBUser {
-  _id?: string,
-  name: string,
+  readonly _id?: string,
+  firstName: string,
+  lastName: string,
   password: string,
+  dateOfBirth: Date,
   email: string,
   phoneNumber: string,
-  emailVerified: boolean,
-  createdAt?: Date,
-  updatedAt?: Date
+  emailVerified?: boolean,
+  updateSignUp?: boolean,
+  readonly createdAt?: Date,
+  readonly updatedAt?: Date
 }
 
-export type PublicUser = Omit<DBUser, "password">
+export type PublicUser = Omit<DBUser, "password" | "updateSignUp">
