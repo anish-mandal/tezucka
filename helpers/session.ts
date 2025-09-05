@@ -1,5 +1,5 @@
 import 'server-only'
-import { verify, sign, SignOptions } from 'jsonwebtoken'
+import { verify, sign, SignOptions, JwtPayload } from 'jsonwebtoken'
 import { cookies } from 'next/headers'
 
 const secretKey = process.env.SESSION_SECRET
@@ -8,13 +8,17 @@ if (!secretKey) {
   throw Error("No SESSION_SECRET found")
 }
 
-async function encrypt(payload: object, exp: SignOptions['expiresIn']) {
+export interface SessionPayload extends JwtPayload {
+  userId: string
+}
+
+function encrypt(payload: SessionPayload, exp: SignOptions['expiresIn']): string {
   return sign(payload, secretKey!, { expiresIn: exp })
 }
 
-async function decrypt(token: string | undefined = '') {
+function decrypt(token: string | undefined = ''): SessionPayload | null {
   try {
-    return verify(token, secretKey!);
+    return verify(token, secretKey!) as SessionPayload;
   } catch (e) {
     // if (e.name == "TokenExpiredError") {
     //   TODO Implement refresh token route
@@ -25,6 +29,7 @@ async function decrypt(token: string | undefined = '') {
     // }
 
     console.error(e)
+    return null
   }
 }
 
@@ -34,7 +39,7 @@ export async function createSession(userId: string) {
   }
 
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-  const session = await encrypt({ userId }, "7d")
+  const session = encrypt({ userId }, "7d")
   const cookieStore = await cookies()
 
   cookieStore.set("session", session, {
@@ -46,7 +51,7 @@ export async function createSession(userId: string) {
   })
 }
 
-export async function checkSession() {
+export async function checkSession(): Promise<SessionPayload | null> {
   const cookieStore = await cookies()
   const token = cookieStore.get("session");
 
@@ -54,7 +59,7 @@ export async function checkSession() {
     return null
   }
 
-  return await decrypt(token.value)
+  return decrypt(token.value)
 }
 
 export async function deleteSession() {

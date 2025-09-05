@@ -1,9 +1,10 @@
 import "server-only"
-import { create, find } from "./services/user"
+import { create, find, get } from "./services/user"
 
 const user = {
   create: create,
-  find: find
+  find: find,
+  get: get
 }
 
 const db = {

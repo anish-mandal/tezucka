@@ -5,7 +5,7 @@ const userSchema = new Schema<DBUser>({
  name: { type: String, minLength: [2, "name must be at least 2 characters long"], required: true },
  email: { type: String, unique: true, required: true, lowercase: true },
  phoneNumber: { type: String, unique: true, required: true },
- password: { type: String, required: true },
+ password: { type: String, required: true, select: false },
  emailVerified: { type: Boolean, required: true, default: false },
 }, { timestamps: true })
 

@@ -14,3 +14,5 @@ export interface DBUser {
   createdAt?: Date,
   updatedAt?: Date
 }
+
+export type PublicUser = Omit<DBUser, "password">
