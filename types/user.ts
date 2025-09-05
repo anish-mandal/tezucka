@@ -1,5 +1,7 @@
 export interface IUser {
-  name: string,
+  firstName: string,
+  lastName?: string,
+  dateOfBirth: Date,
   password: string,
   email: string
 }
@@ -7,7 +9,7 @@ export interface IUser {
 export interface DBUser {
   readonly _id?: string,
   firstName: string,
-  lastName: string,
+  lastName?: string,
   password: string,
   dateOfBirth: Date,
   email: string,

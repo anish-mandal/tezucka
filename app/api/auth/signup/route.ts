@@ -1,15 +1,18 @@
-import { object, string, boolean, ObjectSchema } from "yup";
+import { object, string, boolean, date, ObjectSchema, ValidationError } from "yup";
 import { IUser } from "@/types/user";
 import { hash } from "bcrypt";
 import db from "@/lib/db";
 import { success, error } from "@/helpers/message";
 
 const userSchema: ObjectSchema<IUser> = object({
-  name: string().required().min(2, "name must be at least 2 character long"),
-  email: string().email().required(),
-  phoneNumber: string().required(),
-  password: string().required(),
-  emailVerified: boolean().default(false)
+  firstName: string().required().min(2, "first name must be at least 2 character long"),
+  lastName: string().default(""),
+  dateOfBirth: date().required("date of birth is required").max(new Date(), "date of birth cannot be in the future"),
+  email: string().email("invalid email").required("email is required"),
+  phoneNumber: string().required("phone number is required"),
+  password: string().required("password is required"),
+  emailVerified: boolean().default(false),
+  updateSignUp: boolean().default(false)
 })
 
 
@@ -18,16 +21,24 @@ export async function POST(req: Request) {
 
   try {
     body = await req.json();
-    user = await userSchema.validate(body);
   } catch (e) {
-    return Response.json(error("invalid user data syntax"), { status: 400 })
+    return Response.json(error("invalid json"), { status: 422 })
   }
 
-    const existingUser = await db.user.find(user.email)
-
-    if (existingUser) {
-      return Response.json(error("user already exist"), { status: 409 })
+  try {
+    user = await userSchema.validate(body);
+  } catch (e) {
+    if (e instanceof ValidationError) {
+      return Response.json(error(e.message), { status: 400 })
     }
+
+    return Response.json(error("validation failed"), { status: 400 })
+  }
+
+  const existingUser = await db.user.find(user.email)
+  if (existingUser) {
+    return Response.json(error("user already exist"), { status: 409 })
+  }
 
   try {
     user.password = await hash(user.password, 10)

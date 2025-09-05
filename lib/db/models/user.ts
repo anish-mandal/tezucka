@@ -2,8 +2,8 @@ import { Schema, model, models } from "mongoose";
 import { DBUser } from "@/types/user";
 
 const userSchema = new Schema<DBUser>({
- firstName: { type: String, minlength: [2, "firstName must be at least 2 characters long"], required: true },
- lastName: { type: String, minlength: [2, "lastName must be at least 2 characters long"] },
+ firstName: { type: String, minlength: [2, "first name must be at least 2 characters long"], required: true },
+ lastName: { type: String, default: "" },
  email: { type: String, unique: true, required: true, lowercase: true },
  phoneNumber: { type: String, unique: true, required: true },
  password: { type: String, required: true, select: false },
